@@ -1,0 +1,143 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #e5ddd5; /* WhatsApp-like background */
+}
+
+.chat-container {
+    width: 400px;
+    height: 100%;
+    padding: 0;
+    max-width: 100%;
+    background: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chat-window {
+    display: flex;
+    flex-direction: column; /* Display messages in reverse order */
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    background-color: white; /* WhatsApp-like chat background */
+}
+
+.input-container {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    background-color: #ffffff; /* Footer background matching chat container */
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 20px; /* Rounded input for a WhatsApp-like feel */
+    font-size: 16px;
+    margin-right: 10px; /* Ensure spacing between input and button */
+    box-sizing: border-box; /* Ensure proper padding and border sizing */
+}
+
+button {
+    padding: 10px;
+    border: none;
+    background-color: #128c7e; /* WhatsApp-like send button color */
+    color: white;
+    border-radius: 20%;
+    cursor: pointer;
+    font-size: 16px;
+    width: 60px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #128c7e; /* WhatsApp-like send button hover color */
+}
+
+.message {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 10px 15px;
+    border-radius: 7.5px;
+    max-width: 80%;
+    word-wrap: break-word;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.message.user {
+    align-self: flex-end;
+    background-color: lightgrey; /* WhatsApp-like user message background */
+    color: black;
+    text-align: right;
+    margin: 10px 10px 10px auto;
+}
+
+.message.bot {
+    align-self: flex-start;
+    background-color: #128c7e;
+    border: 1px solid #ddd;
+    text-align: left;
+    color: white;
+    margin: 10px auto 10px 10px; /* Adjusted margin for better spacing */
+}
+
+.code-block {
+    background: grey;
+    padding: 10px;
+    border-radius: 5px;
+    position: relative;
+    overflow-x: auto; /* Enable horizontal scrolling for long code snippets */
+}
+
+.code-block pre {
+    margin: 0;
+    white-space: pre-wrap; /* Preserve whitespace and wrap long lines */
+}
+
+.copy-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    padding: 5px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.copy-button:hover {
+    background: #0056b3;
+}
+
+.somby {
+  background-color: #128c7e;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  color: #fff;
+  font-size: 24px;
+  width: 100%;
+  height: 50px;
+}
+.container {
+    display: flex;
+    justify-content: center; /* Horizontal centering */
+    align-items: center; /* Vertical centering */
+    height: 100vh; /* Adjust height as needed */
+}
