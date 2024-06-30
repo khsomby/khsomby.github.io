@@ -1,4 +1,4 @@
-async function sendQuery() {
+function sendQuery() {
   const userQuery = document.getElementById('userQuery').value;
   const chatWindow = document.getElementById('chatWindow');
 
@@ -15,25 +15,31 @@ async function sendQuery() {
   chatWindow.appendChild(botMessage);
   chatWindow.scrollTop = chatWindow.scrollHeight;
 
-  try {
-    const queryContent = userQuery;
-    const response = await fetch('https://smoby-ai-bot.onrender.com/chat?content=' + encodeURIComponent(queryContent));
-    const jsonResponse = await response.json();
+  const queryContent = userQuery;
+  fetch('https://smoby-ai-bot.onrender.com/chat?content=' + encodeURIComponent(queryContent))
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(jsonResponse => {
+      chatWindow.removeChild(botMessage);
 
-    chatWindow.removeChild(botMessage);
+      const botResponse = document.createElement('div');
+      botResponse.className = 'message bot';
+      botResponse.textContent = jsonResponse.answer || "No answer found in the response.";
+      chatWindow.appendChild(botResponse);
+    })
+    .catch(error => {
+      chatWindow.removeChild(botMessage);
 
-    const botResponse = document.createElement('div');
-    botResponse.className = 'message bot';
-    botResponse.textContent = jsonResponse.answer;
-    chatWindow.appendChild(botResponse);
-  } catch (error) {
-    chatWindow.removeChild(botMessage);
-
-    const errorMessage = document.createElement('div');
-    errorMessage.className = 'message bot';
-    errorMessage.textContent = 'Error: ' + error.message;
-    chatWindow.appendChild(errorMessage);
-  }
+      const errorMessage = document.createElement('div');
+      errorMessage.className = 'message bot';
+      errorMessage.textContent = 'Error: ' + error.message;
+      chatWindow.appendChild(errorMessage);
+      console.error('Fetch error:', error);
+    });
 
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
