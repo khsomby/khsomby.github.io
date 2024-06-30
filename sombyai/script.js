@@ -1,14 +1,14 @@
 async function sendQuery() {
   const userQuery = document.getElementById('userQuery').value;
   const chatWindow = document.getElementById('chatWindow');
-  
+
   const userMessage = document.createElement('div');
   userMessage.className = 'message user';
   userMessage.textContent = userQuery;
   chatWindow.appendChild(userMessage);
-  
+
   document.getElementById('userQuery').value = '';
-  
+
   const botMessage = document.createElement('div');
   botMessage.className = 'message bot';
   botMessage.textContent = 'Miandry kely...';
@@ -18,8 +18,7 @@ async function sendQuery() {
   try {
     const queryContent = userQuery;
     const response = await fetch('https://smoby-ai-bot.onrender.com/chat?content=' + encodeURIComponent(queryContent));
-    
-    const jsonResponse = await response.data;
+    const jsonResponse = await response.json();
 
     chatWindow.removeChild(botMessage);
 
@@ -29,6 +28,7 @@ async function sendQuery() {
     chatWindow.appendChild(botResponse);
   } catch (error) {
     chatWindow.removeChild(botMessage);
+
     const errorMessage = document.createElement('div');
     errorMessage.className = 'message bot';
     errorMessage.textContent = 'Error: ' + error.message;
