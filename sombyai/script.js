@@ -17,8 +17,7 @@ async function sendQuery() {
 
   try {
     const queryContent = userQuery;
-    const response = await fetch(
-      'https://smoby-ai-bot.onrender.com/chat?content=' + encodeURIComponent(queryContent));
+    const response = await fetch('https://smoby-ai-bot.onrender.com/chat?content=' + encodeURIComponent(queryContent));
     
     const jsonResponse = await response.data;
 
@@ -32,7 +31,7 @@ async function sendQuery() {
     chatWindow.removeChild(botMessage);
     const errorMessage = document.createElement('div');
     errorMessage.className = 'message bot';
-    errorMessage.textContent = 'Error fetching response: ' + error.message;
+    errorMessage.textContent = 'Error: ' + error.message;
     chatWindow.appendChild(errorMessage);
   }
 
