@@ -21,7 +21,7 @@ async function sendQuery() {
       'https://smoby-ai-bot.onrender.com/chat?content=' + encodeURIComponent(queryContent)
     );
     
-    const jsonResponse = await response.json();
+    const jsonResponse = await response.data;
 
     chatWindow.removeChild(botMessage);
 
