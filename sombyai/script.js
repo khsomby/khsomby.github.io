@@ -18,8 +18,7 @@ async function sendQuery() {
   try {
     const queryContent = userQuery;
     const response = await fetch(
-      'https://smoby-ai-bot.onrender.com/chat?content=' + encodeURIComponent(queryContent)
-    );
+      'https://smoby-ai-bot.onrender.com/chat?content=' + encodeURIComponent(queryContent));
     
     const jsonResponse = await response.data;
 
