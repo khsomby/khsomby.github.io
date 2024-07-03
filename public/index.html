@@ -38,9 +38,6 @@
             max-width: 80%;
             position: relative; /* Added for positioning seenBy text */
         }
-        .message.seen {
-            background-color: #d0f0fd; /* Light blue for seen messages */
-        }
         .message.you {
             background-color: skyblue;
             margin-left: auto;
@@ -48,9 +45,7 @@
         .seen-by {
             font-size: 0.8em;
             color: #666;
-            position: absolute;
-            bottom: -15px;
-            left: 10px;
+            margin-top: 5px; /* Added margin-top for spacing */
         }
         #message-input-container {
             display: flex;
@@ -110,7 +105,7 @@
                 const msgClass = msg.user === userName ? 'message you' : 'message';
                 const seenByUsers = msg.seenBy.length > 0 ? `Seen by ${msg.seenBy.join(', ')}` : '';
                 return `
-                    <div class="${msgClass} ${msg.seenBy.includes(userName) ? 'seen' : ''}">
+                    <div class="${msgClass}" data-index="${index}">
                         <strong>${msg.user}:</strong> ${msg.text}
                         <div class="seen-by">${seenByUsers}</div>
                     </div>
@@ -120,7 +115,7 @@
         }
 
         async function fetchMessages() {
-            const response = await fetch('/messages');
+            const response = await fetch(`/messages?userName=${userName}`);
             const messages = await response.json();
             displayMessages(messages);
         }
@@ -128,7 +123,7 @@
         async function sendMessage() {
             const message = messageInput.value;
             if (message.trim() !== '') {
-                const newMessage = { user: userName, text: message };
+                const newMessage = { user: userName, text: message, seenBy: [] };
                 const response = await fetch('/messages', {
                     method: 'POST',
                     headers: {
@@ -177,8 +172,18 @@
             }
         }
 
+        function handleLongPress(event) {
+            const messageElement = event.target.closest('.message');
+            const index = messageElement.getAttribute('data-index');
+            deleteMessage(index);
+        }
+
         sendButton.addEventListener('click', sendMessage);
         changeNameButton.addEventListener('click', changeName);
+        messageBox.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            handleLongPress(e);
+        });
 
         fetchMessages();
         setInterval(fetchMessages, 1000); // Check for new messages every second
