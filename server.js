@@ -1,15 +1,15 @@
 const express = require('express');
 const fs = require('fs');
+const path = require('path');
 const app = express();
-const port = 3000;
-const messagesFile = 'messages.json';
+const port = process.env.PORT || 3000;
+const messagesFile = path.join(__dirname, 'messages.json');
 
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Endpoint to get messages
 app.get('/messages', (req, res) => {
-    fs.readFile(messagesFile, (err, data) => {
+    fs.readFile(messagesFile, 'utf8', (err, data) => {
         if (err) {
             res.status(500).send('Error reading messages');
             return;
@@ -18,10 +18,9 @@ app.get('/messages', (req, res) => {
     });
 });
 
-// Endpoint to post a new message
 app.post('/messages', (req, res) => {
     const newMessage = req.body;
-    fs.readFile(messagesFile, (err, data) => {
+    fs.readFile(messagesFile, 'utf8', (err, data) => {
         if (err) {
             res.status(500).send('Error reading messages');
             return;
@@ -35,6 +34,29 @@ app.post('/messages', (req, res) => {
             }
             res.status(201).send('Message saved');
         });
+    });
+});
+
+app.delete('/messages/:index', (req, res) => {
+    const index = parseInt(req.params.index, 10);
+    fs.readFile(messagesFile, 'utf8', (err, data) => {
+        if (err) {
+            res.status(500).send('Error reading messages');
+            return;
+        }
+        const messages = JSON.parse(data);
+        if (index >= 0 && index < messages.length) {
+            messages.splice(index, 1);
+            fs.writeFile(messagesFile, JSON.stringify(messages), err => {
+                if (err) {
+                    res.status(500).send('Error writing messages');
+                    return;
+                }
+                res.status(200).send('Message deleted');
+            });
+        } else {
+            res.status(400).send('Invalid index');
+        }
     });
 });
 
