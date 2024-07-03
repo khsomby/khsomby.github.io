@@ -15,8 +15,7 @@ function readMessagesFile(callback) {
         if (err) {
             if (err.code === 'ENOENT') {
                 // File does not exist, initialize with empty array
-                return callback(null, []);
-            }
+                return callback(null, []);            }
             return callback(err);
         }
         try {
