@@ -61,6 +61,15 @@
             border-radius: 20px;
             cursor: pointer;
         }
+        #change-name-button {
+            padding: 10px 20px;
+            margin-left: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -69,19 +78,21 @@
         <div id="message-input-container">
             <textarea type="text" id="message-input" placeholder="Type your message here..."></textarea>
             <button id="send-button">Send</button>
+            <button id="change-name-button">N</button>
         </div>
     </div>
 
     <script>
         let userName = localStorage.getItem('userName');
         if (!userName) {
-            userName = prompt("Please enter your name:");
+            userName = prompt("Apidiro ny anarana:");
             localStorage.setItem('userName', userName);
         }
 
         const messageBox = document.getElementById('message-box');
         const messageInput = document.getElementById('message-input');
         const sendButton = document.getElementById('send-button');
+        const changeNameButton = document.getElementById('change-name-button');
 
         function displayMessages(messages) {
             messageBox.innerHTML = messages.map((msg, index) => {
@@ -128,7 +139,29 @@
             }
         }
 
+        async function changeName() {
+            const newName = prompt("Apidiro ny anarana vaovao:");
+            if (newName && newName.trim() !== '') {
+                const response = await fetch('/name', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ newName })
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    userName = result.newName;
+                    localStorage.setItem('userName', userName);
+                    fetchMessages();
+                } else {
+                    alert('Error changing name');
+                }
+            }
+        }
+
         sendButton.addEventListener('click', sendMessage);
+        changeNameButton.addEventListener('click', changeName);
 
         fetchMessages();
         setInterval(fetchMessages, 1000); // Check for new messages every second
