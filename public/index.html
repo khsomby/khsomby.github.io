@@ -84,9 +84,9 @@
         const sendButton = document.getElementById('send-button');
 
         function displayMessages(messages) {
-            messageBox.innerHTML = messages.map(msg => {
+            messageBox.innerHTML = messages.map((msg, index) => {
                 const msgClass = msg.user === userName ? 'message you' : 'message';
-                return `<div class="${msgClass}"><strong>${msg.user}:</strong> ${msg.text}</div>`;
+                return `<div class="${msgClass}" data-index="${index}" ondblclick="deleteMessage(${index})"><strong>${msg.user}:</strong> ${msg.text}</div>`;
             }).join('');
             messageBox.scrollTop = messageBox.scrollHeight;
         }
@@ -114,6 +114,17 @@
                 } else {
                     alert('Error sending message');
                 }
+            }
+        }
+
+        async function deleteMessage(index) {
+            const response = await fetch(`/messages/${index}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                fetchMessages();
+            } else {
+                alert('Error deleting message');
             }
         }
 
