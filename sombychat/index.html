@@ -38,9 +38,8 @@
             max-width: 80%;
         }
         .message.you {
-            background-color: #fff;
+            background-color: skyblue;
             margin-left: auto;
-            background-color: skyblue
         }
         #message-input-container {
             display: flex;
@@ -84,7 +83,7 @@
         const messageInput = document.getElementById('message-input');
         const sendButton = document.getElementById('send-button');
 
-        const messages = JSON.parse(localStorage.getItem('messages')) || [];
+        let messages = JSON.parse(localStorage.getItem('messages')) || [];
 
         function displayMessages() {
             messageBox.innerHTML = messages.map(msg => {
@@ -92,6 +91,14 @@
                 return `<div class="${msgClass}"><strong>${msg.user}:</strong> ${msg.text}</div>`;
             }).join('');
             messageBox.scrollTop = messageBox.scrollHeight;
+        }
+
+        function updateMessages() {
+            const newMessages = JSON.parse(localStorage.getItem('messages')) || [];
+            if (newMessages.length !== messages.length) {
+                messages = newMessages;
+                displayMessages();
+            }
         }
 
         sendButton.addEventListener('click', () => {
@@ -106,6 +113,7 @@
         });
 
         displayMessages();
+        setInterval(updateMessages, 1000); // Check for new messages every second
     </script>
 </body>
 </html>
