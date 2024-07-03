@@ -36,10 +36,21 @@
             background-color: #dcf8c6;
             width: fit-content;
             max-width: 80%;
+            position: relative; /* Added for positioning seenBy text */
+        }
+        .message.seen {
+            background-color: #d0f0fd; /* Light blue for seen messages */
         }
         .message.you {
             background-color: skyblue;
             margin-left: auto;
+        }
+        .seen-by {
+            font-size: 0.8em;
+            color: #666;
+            position: absolute;
+            bottom: -15px;
+            left: 10px;
         }
         #message-input-container {
             display: flex;
@@ -78,14 +89,14 @@
         <div id="message-input-container">
             <textarea type="text" id="message-input" placeholder="Type your message here..."></textarea>
             <button id="send-button">Send</button>
-            <button id="change-name-button">N</button>
+            <button id="change-name-button">Change Name</button>
         </div>
     </div>
 
     <script>
         let userName = localStorage.getItem('userName');
         if (!userName) {
-            userName = prompt("Apidiro ny anarana:");
+            userName = prompt("Please enter your name:");
             localStorage.setItem('userName', userName);
         }
 
@@ -97,7 +108,13 @@
         function displayMessages(messages) {
             messageBox.innerHTML = messages.map((msg, index) => {
                 const msgClass = msg.user === userName ? 'message you' : 'message';
-                return `<div class="${msgClass}" data-index="${index}" ondblclick="deleteMessage(${index})"><strong>${msg.user}:</strong> ${msg.text}</div>`;
+                const seenByUsers = msg.seenBy.length > 0 ? `Seen by ${msg.seenBy.join(', ')}` : '';
+                return `
+                    <div class="${msgClass} ${msg.seenBy.includes(userName) ? 'seen' : ''}">
+                        <strong>${msg.user}:</strong> ${msg.text}
+                        <div class="seen-by">${seenByUsers}</div>
+                    </div>
+                `;
             }).join('');
             messageBox.scrollTop = messageBox.scrollHeight;
         }
@@ -140,7 +157,7 @@
         }
 
         async function changeName() {
-            const newName = prompt("Apidiro ny anarana vaovao:");
+            const newName = prompt("Please enter your new name:");
             if (newName && newName.trim() !== '') {
                 const response = await fetch('/name', {
                     method: 'POST',
@@ -164,7 +181,7 @@
         changeNameButton.addEventListener('click', changeName);
 
         fetchMessages();
-        setInterval(fetchMessages, 100); // Check for new messages every second
+        setInterval(fetchMessages, 1000); // Check for new messages every second
     </script>
 </body>
 </html>
