@@ -1,78 +1,99 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const fs = require('fs');
-const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
-const messagesFile = path.join(__dirname, 'messages.json');
+const messagesFilePath = 'messages.json';
 
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(bodyParser.json());
+app.use(express.static('public'));
 
+// Endpoint to fetch all messages and mark them as seen by the current user
 app.get('/messages', (req, res) => {
-    fs.readFile(messagesFile, 'utf8', (err, data) => {
+    const userName = req.query.userName;
+    fs.readFile(messagesFilePath, 'utf8', (err, data) => {
         if (err) {
-            res.status(500).send('Error reading messages');
-            return;
+            return res.status(500).send('Error reading messages file');
         }
-        const messages = JSON.parse(data);
-        res.json(messages.map(msg => ({
-            ...msg,
-            seenBy: [] // Initialize seenBy array for each message
-        })));
+
+        let messages = JSON.parse(data);
+
+        if (userName) {
+            messages = messages.map(message => {
+                if (!message.seenBy.includes(userName)) {
+                    message.seenBy.push(userName);
+                }
+                return message;
+            });
+
+            fs.writeFile(messagesFilePath, JSON.stringify(messages), 'utf8', err => {
+                if (err) {
+                    return res.status(500).send('Error updating messages file');
+                }
+                res.json(messages);
+            });
+        } else {
+            res.json(messages);
+        }
     });
 });
 
+// Endpoint to add a new message
 app.post('/messages', (req, res) => {
     const newMessage = req.body;
-    fs.readFile(messagesFile, 'utf8', (err, data) => {
+
+    fs.readFile(messagesFilePath, 'utf8', (err, data) => {
         if (err) {
-            res.status(500).send('Error reading messages');
-            return;
+            return res.status(500).send('Error reading messages file');
         }
+
         const messages = JSON.parse(data);
-        messages.push({ ...newMessage, seenBy: [] }); // Add seenBy array for new message
-        fs.writeFile(messagesFile, JSON.stringify(messages), err => {
+        messages.push(newMessage);
+
+        fs.writeFile(messagesFilePath, JSON.stringify(messages), 'utf8', err => {
             if (err) {
-                res.status(500).send('Error writing message');
-                return;
+                return res.status(500).send('Error writing messages file');
             }
-            res.status(201).send('Message saved');
+            res.status(200).send('Message added');
         });
     });
 });
 
+// Endpoint to delete a message
 app.delete('/messages/:index', (req, res) => {
     const index = parseInt(req.params.index, 10);
-    fs.readFile(messagesFile, 'utf8', (err, data) => {
+
+    fs.readFile(messagesFilePath, 'utf8', (err, data) => {
         if (err) {
-            res.status(500).send('Error reading messages');
-            return;
+            return res.status(500).send('Error reading messages file');
         }
+
         const messages = JSON.parse(data);
         if (index >= 0 && index < messages.length) {
             messages.splice(index, 1);
-            fs.writeFile(messagesFile, JSON.stringify(messages), err => {
+            fs.writeFile(messagesFilePath, JSON.stringify(messages), 'utf8', err => {
                 if (err) {
-                    res.status(500).send('Error writing messages');
-                    return;
+                    return res.status(500).send('Error writing messages file');
                 }
                 res.status(200).send('Message deleted');
             });
         } else {
-            res.status(400).send('Invalid index');
+            res.status(404).send('Message not found');
         }
     });
 });
 
+// Endpoint to change username
 app.post('/name', (req, res) => {
     const { newName } = req.body;
-    if (newName && typeof newName === 'string' && newName.trim() !== '') {
-        res.status(200).send({ newName });
+
+    if (newName && newName.trim() !== '') {
+        res.json({ newName: newName.trim() });
     } else {
         res.status(400).send('Invalid name');
     }
 });
 
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+    console.log(`Server is running on port ${port}`);
 });
