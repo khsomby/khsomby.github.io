@@ -1,22 +1,45 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
+const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
-const messagesFilePath = 'messages.json';
+const messagesFilePath = path.join(__dirname, 'messages.json');
 
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
+// Utility function to read messages from file
+function readMessagesFile(callback) {
+    fs.readFile(messagesFilePath, 'utf8', (err, data) => {
+        if (err) {
+            if (err.code === 'ENOENT') {
+                // File does not exist, initialize with empty array
+                return callback(null, []);
+            }
+            return callback(err);
+        }
+        try {
+            const messages = JSON.parse(data || '[]'); // Fallback to empty array if data is empty
+            callback(null, messages);
+        } catch (parseErr) {
+            callback(parseErr);
+        }
+    });
+}
+
+// Utility function to write messages to file
+function writeMessagesFile(messages, callback) {
+    fs.writeFile(messagesFilePath, JSON.stringify(messages), 'utf8', callback);
+}
+
 // Endpoint to fetch all messages and mark them as seen by the current user
 app.get('/messages', (req, res) => {
     const userName = req.query.userName;
-    fs.readFile(messagesFilePath, 'utf8', (err, data) => {
+    readMessagesFile((err, messages) => {
         if (err) {
             return res.status(500).send('Error reading messages file');
         }
-
-        let messages = JSON.parse(data);
 
         if (userName) {
             messages = messages.map(message => {
@@ -26,7 +49,7 @@ app.get('/messages', (req, res) => {
                 return message;
             });
 
-            fs.writeFile(messagesFilePath, JSON.stringify(messages), 'utf8', err => {
+            writeMessagesFile(messages, err => {
                 if (err) {
                     return res.status(500).send('Error updating messages file');
                 }
@@ -42,15 +65,14 @@ app.get('/messages', (req, res) => {
 app.post('/messages', (req, res) => {
     const newMessage = req.body;
 
-    fs.readFile(messagesFilePath, 'utf8', (err, data) => {
+    readMessagesFile((err, messages) => {
         if (err) {
             return res.status(500).send('Error reading messages file');
         }
 
-        const messages = JSON.parse(data);
         messages.push(newMessage);
 
-        fs.writeFile(messagesFilePath, JSON.stringify(messages), 'utf8', err => {
+        writeMessagesFile(messages, err => {
             if (err) {
                 return res.status(500).send('Error writing messages file');
             }
@@ -63,15 +85,14 @@ app.post('/messages', (req, res) => {
 app.delete('/messages/:index', (req, res) => {
     const index = parseInt(req.params.index, 10);
 
-    fs.readFile(messagesFilePath, 'utf8', (err, data) => {
+    readMessagesFile((err, messages) => {
         if (err) {
             return res.status(500).send('Error reading messages file');
         }
 
-        const messages = JSON.parse(data);
         if (index >= 0 && index < messages.length) {
             messages.splice(index, 1);
-            fs.writeFile(messagesFilePath, JSON.stringify(messages), 'utf8', err => {
+            writeMessagesFile(messages, err => {
                 if (err) {
                     return res.status(500).send('Error writing messages file');
                 }
