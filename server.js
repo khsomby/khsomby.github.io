@@ -14,20 +14,23 @@ app.get('/messages', (req, res) => {
             res.status(500).send('Error reading messages');
             return;
         }
-        res.json(JSON.parse(data));
+        const messages = JSON.parse(data);
+        res.json(messages.map(msg => ({
+            ...msg,
+            seenBy: [] // Initialize seenBy array for each message
+        })));
     });
 });
 
 app.post('/messages', (req, res) => {
     const newMessage = req.body;
-    newMessage.seenBy = []; // Initialize seenBy array for the new message
     fs.readFile(messagesFile, 'utf8', (err, data) => {
         if (err) {
             res.status(500).send('Error reading messages');
             return;
         }
         const messages = JSON.parse(data);
-        messages.push(newMessage);
+        messages.push({ ...newMessage, seenBy: [] }); // Add seenBy array for new message
         fs.writeFile(messagesFile, JSON.stringify(messages), err => {
             if (err) {
                 res.status(500).send('Error writing message');
@@ -68,32 +71,6 @@ app.post('/name', (req, res) => {
     } else {
         res.status(400).send('Invalid name');
     }
-});
-
-app.put('/messages/:index/seen', (req, res) => {
-    const index = parseInt(req.params.index, 10);
-    const { username } = req.body;
-    fs.readFile(messagesFile, 'utf8', (err, data) => {
-        if (err) {
-            res.status(500).send('Error reading messages');
-            return;
-        }
-        const messages = JSON.parse(data);
-        if (index >= 0 && index < messages.length) {
-            if (!messages[index].seenBy.includes(username)) {
-                messages[index].seenBy.push(username);
-            }
-            fs.writeFile(messagesFile, JSON.stringify(messages), err => {
-                if (err) {
-                    res.status(500).send('Error writing messages');
-                    return;
-                }
-                res.status(200).send('Message seen');
-            });
-        } else {
-            res.status(400).send('Invalid index');
-        }
-    });
 });
 
 app.listen(port, () => {
