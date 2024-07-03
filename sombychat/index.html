@@ -83,9 +83,7 @@
         const messageInput = document.getElementById('message-input');
         const sendButton = document.getElementById('send-button');
 
-        let messages = JSON.parse(localStorage.getItem('messages')) || [];
-
-        function displayMessages() {
+        function displayMessages(messages) {
             messageBox.innerHTML = messages.map(msg => {
                 const msgClass = msg.user === userName ? 'message you' : 'message';
                 return `<div class="${msgClass}"><strong>${msg.user}:</strong> ${msg.text}</div>`;
@@ -93,27 +91,36 @@
             messageBox.scrollTop = messageBox.scrollHeight;
         }
 
-        function updateMessages() {
-            const newMessages = JSON.parse(localStorage.getItem('messages')) || [];
-            if (newMessages.length !== messages.length) {
-                messages = newMessages;
-                displayMessages();
-            }
+        async function fetchMessages() {
+            const response = await fetch('/messages');
+            const messages = await response.json();
+            displayMessages(messages);
         }
 
-        sendButton.addEventListener('click', () => {
+        async function sendMessage() {
             const message = messageInput.value;
             if (message.trim() !== '') {
                 const newMessage = { user: userName, text: message };
-                messages.push(newMessage);
-                localStorage.setItem('messages', JSON.stringify(messages));
-                displayMessages();
-                messageInput.value = '';
+                const response = await fetch('/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newMessage)
+                });
+                if (response.ok) {
+                    messageInput.value = '';
+                    fetchMessages();
+                } else {
+                    alert('Error sending message');
+                }
             }
-        });
+        }
 
-        displayMessages();
-        setInterval(updateMessages, 1000); // Check for new messages every second
+        sendButton.addEventListener('click', sendMessage);
+
+        fetchMessages();
+        setInterval(fetchMessages, 1000); // Check for new messages every second
     </script>
 </body>
 </html>
