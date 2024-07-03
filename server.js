@@ -60,6 +60,15 @@ app.delete('/messages/:index', (req, res) => {
     });
 });
 
+app.post('/name', (req, res) => {
+    const { newName } = req.body;
+    if (newName && typeof newName === 'string' && newName.trim() !== '') {
+        res.status(200).send({ newName });
+    } else {
+        res.status(400).send('Invalid name');
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
