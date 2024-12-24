@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Facebook Comment Picker</title>
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css" rel="stylesheet">
+  <style>
+    /* Global Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #0066cc, #00aaff);
+      color: #fff;
+      padding: 0 20px;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .container {
+      background: #fff;
+      color: #333;
+      border-radius: 15px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      padding: 40px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #00aaff;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-size: 1.2rem;
+      color: #333;
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    input {
+      padding: 12px;
+      font-size: 1.1rem;
+      width: 100%;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      background: #f7f7f7;
+      transition: all 0.3s;
+      margin-bottom: 20px;
+    }
+
+    input:focus {
+      border-color: #00aaff;
+      outline: none;
+      box-shadow: 0 0 10px rgba(0, 170, 255, 0.5);
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      font-size: 1.1rem;
+      background: #00aaff;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease-in-out;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #0088cc;
+    }
+
+    .countdown {
+      font-size: 2rem;
+      color: #28a745;
+      font-weight: 700;
+      margin-top: 15px;
+    }
+
+    .winner-section {
+      display: none;
+      padding: 20px;
+      background: #e1ffe1;
+      border-radius: 15px;
+      margin-top: 30px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 255, 0, 0.2);
+    }
+
+    .winner-section img {
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      margin-bottom: 15px;
+    }
+
+    .winner-section h3 {
+      font-size: 1.5rem;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .winner-section p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Facebook Comment Picker</h1>
+    <form id="commentPickerForm">
+      <div class="form-group">
+        <label for="postUrl">Enter Facebook Post URL:</label>
+        <input type="url" id="postUrl" placeholder="Enter the URL of the Facebook post" required>
+      </div>
+      <button type="submit">Fetch Comments</button>
+    </form>
+
+    <div id="winnerSection" class="winner-section">
+      <img id="winnerAvatar" src="" alt="Winner Avatar">
+      <h3 id="winnerName"></h3>
+      <p id="winnerComment"></p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
+  <script>
+    const form = document.getElementById('commentPickerForm');
+    const winnerSection = document.getElementById('winnerSection');
+    const winnerAvatar = document.getElementById('winnerAvatar');
+    const winnerName = document.getElementById('winnerName');
+    const winnerComment = document.getElementById('winnerComment');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const postUrl = document.getElementById('postUrl').value;
+
+      try {
+        const postId = new URL(postUrl).pathname.split('/').pop();
+        const url = `https://graph.facebook.com/${postId}?fields=comments{from,message}&access_token=EAAAAUaZA8jlABOZB5eLCohFz2x2iXaKBExYOHw6NdBJZBeKGLuQAm8Q60XeXA41CxaQpivEksgfzrAhDuga3JyP3JkRbujanQqjzZAXpJNJQa9EqjSImZBpMvm46gtVyFv6ZAgnd50swkZCuLRuh7zWSvTlUxb1jFnXd8KNbsfzihdvfVMrZAkBrkGnLum2kLYrmBgZDZD`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.comments && data.comments.data.length) {
+          // Start the countdown
+          let countdownTime = 5;
+          const countdownInterval = setInterval(() => {
+            if (countdownTime > 0) {
+              Swal.fire({
+                title: 'Picking a winner...',
+                html: `Please wait ${countdownTime--} seconds`,
+                timer: 5000,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                willOpen: () => {
+                  Swal.showLoading();
+                }
+              });
+            }
+            if (countdownTime < 0) {
+              clearInterval(countdownInterval);
+
+              const randomIndex = Math.floor(Math.random() * data.comments.data.length);
+              const winner = data.comments.data[randomIndex];
+
+              // Show winner using SweetAlert2
+              winnerAvatar.src = `https://graph.facebook.com/${winner.from.id}/picture?access_token=EAAAAUaZA8jlABOZB5eLCohFz2x2iXaKBExYOHw6NdBJZBeKGLuQAm8Q60XeXA41CxaQpivEksgfzrAhDuga3JyP3JkRbujanQqjzZAXpJNJQa9EqjSImZBpMvm46gtVyFv6ZAgnd50swkZCuLRuh7zWSvTlUxb1jFnXd8KNbsfzihdvfVMrZAkBrkGnLum2kLYrmBgZDZD`;
+              winnerName.textContent = winner.from.name;
+              winnerComment.textContent = winner.message;
+
+              Swal.fire({
+                icon: 'success',
+                title: 'Winner Selected!',
+                html: `<h3>${winner.from.name}</h3><p>${winner.message}</p>`,
+                imageUrl: `https://graph.facebook.com/${winner.from.id}/picture?access_token=EAAAAUaZA8jlABOZB5eLCohFz2x2iXaKBExYOHw6NdBJZBeKGLuQAm8Q60XeXA41CxaQpivEksgfzrAhDuga3JyP3JkRbujanQqjzZAXpJNJQa9EqjSImZBpMvm46gtVyFv6ZAgnd50swkZCuLRuh7zWSvTlUxb1jFnXd8KNbsfzihdvfVMrZAkBrkGnLum2kLYrmBgZDZD`,
+                showCloseButton: true,
+              });
+
+              winnerSection.style.display = 'block';
+            }
+          }, 1000);
+
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'No Comments Found',
+            text: 'There are no comments on this post or the URL is incorrect.',
+          });
+        }
+      } catch (error) {
+        console.error(error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error fetching comments. Please check the URL.',
+        });
+      }
+    });
+  </script>
+
+</body>
+</html>
